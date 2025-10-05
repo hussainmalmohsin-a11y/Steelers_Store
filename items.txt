@@ -1,0 +1,13 @@
+Item Code	Item Name			Price
+1111		Steeler Football		$29.00
+2222		Steeler Mug			$15.00
+3333		Steeler backpack		$98.00
+4444		Steeler keychain		$10.00
+5555		Steeler Glasses			$59.00
+6666		Steeler Tote			$198.00
+7777		Steeler Terrible towel		$12.00
+8888		Steeler hat			$39.00
+9999		Steeler sunglasses		$139.00
+1010		Steeler air bud case		$15.00
+1212		Steeler Poster			$50.00
+1313		Steeler chair			$40.00
