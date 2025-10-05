@@ -1,0 +1,139 @@
+package SteelersStore;
+import javax.swing.*;
+import java.text.DecimalFormat;
+import java.io.File;
+import java.util.Scanner;
+
+public class SteelerStore {
+
+    private int[] itemCodes = new int[100];
+    private String[] itemNames = new String[100];
+    private double[] itemPrices = new double[100];
+
+    private int[] purchasedItemCodes = new int[100];
+    private int[] purchasedQuantities = new int[100];
+    private int purchaseCount = 0;
+
+    private String name;
+    private String address;
+
+    private double totalBeforeTax;
+    private double tax;
+    private double shipping;
+    private double finalAmount;
+
+    public static void main(String[] args) {
+        SteelerStore store = new SteelerStore();
+        store.loadItems();
+        store.readShipmentInformation();
+        store.promptPurchases();
+        store.calculateTotals();
+        store.printInvoice();
+    }
+
+    private void loadItems() {
+        try {
+            Scanner scanner = new Scanner(new File("items.txt"));
+
+            if (scanner.hasNextLine()) {
+                scanner.nextLine();
+            }
+
+            int index = 0;
+            while (scanner.hasNextLine() && index < itemCodes.length) {
+                String line = scanner.nextLine().trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+
+                String[] parts = line.split("\\s{2,}");
+
+                if (parts.length < 3) {
+                    JOptionPane.showMessageDialog(null, "Malformed line: " + line, "Error", JOptionPane.WARNING_MESSAGE);
+                    continue;
+                }
+
+                try {
+                  
+                                                                                                                                                                                                                                                                                                                                              //****
+                    itemCodes[index] = Integer.parseInt(parts[0].trim());
+                    itemNames[index] = parts[1].trim();
+                    String priceString = parts[2].trim().replace("$", "");
+                    itemPrices[index] = Double.parseDouble(priceString);
+                    index++;
+                } catch (NumberFormatException nfe) {
+                    JOptionPane.showMessageDialog(null, "Error parsing item data: " + nfe.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+            scanner.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error reading items file: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    private void readShipmentInformation() {
+        name = JOptionPane.showInputDialog(null, "Enter your name:", "Shipment Information", JOptionPane.QUESTION_MESSAGE);
+        address = JOptionPane.showInputDialog(null, "Enter your address:", "Shipment Information", JOptionPane.QUESTION_MESSAGE);
+    }
+    private void promptPurchases() {
+        boolean morePurchases = true;
+        while (morePurchases) {
+            String itemCodeStr = JOptionPane.showInputDialog(null, "Enter the item code to purchase:", "Purchase Items", JOptionPane.QUESTION_MESSAGE);
+            int itemCode = Integer.parseInt(itemCodeStr);
+            String quantityStr = JOptionPane.showInputDialog(null, "Enter the quantity:", "Purchase Items", JOptionPane.QUESTION_MESSAGE);
+            int quantity = Integer.parseInt(quantityStr);
+
+            for (int i = 0; i < itemCodes.length; i++) {
+                if (itemCodes[i] == itemCode) {
+                    purchasedItemCodes[purchaseCount] = itemCode;
+                    purchasedQuantities[purchaseCount] = quantity;
+                    purchaseCount++;
+                    break;
+                }
+            }
+
+            int option = JOptionPane.showConfirmDialog(null, "Do you want to purchase more items?", "Purchase Items", JOptionPane.YES_NO_OPTION);
+            morePurchases = (option == JOptionPane.YES_OPTION);
+        }
+    }
+    private void calculateTotals() {
+        totalBeforeTax = 0;
+        for (int i = 0; i < purchaseCount; i++) {
+            int itemCode = purchasedItemCodes[i];
+            int quantity = purchasedQuantities[i];
+            for (int j = 0; j < itemCodes.length; j++) {
+                if (itemCodes[j] == itemCode) {
+                    totalBeforeTax += itemPrices[j] * quantity;
+                }
+            }
+        }
+        tax = totalBeforeTax * 0.07;
+        shipping = (totalBeforeTax < 100) ? 20 : 0;
+        finalAmount = totalBeforeTax + tax + shipping;
+    }
+
+    private void printInvoice() {
+        DecimalFormat df2 = new DecimalFormat("$##,###.00");
+        StringBuilder invoice = new StringBuilder();
+        invoice.append("Name: ").append(name).append("\n");
+        invoice.append("Address: ").append(address).append("\n\n");
+        invoice.append("Items Purchased:\n");
+        for (int i = 0; i < purchaseCount; i++) {
+            int itemCode = purchasedItemCodes[i];
+            int quantity = purchasedQuantities[i];
+            for (int j = 0; j < itemCodes.length; j++) {
+                if (itemCodes[j] == itemCode) {
+                    invoice.append(itemCodes[j]).append("\t").append(itemNames[j]).append("\t")
+                            .append(df2.format(itemPrices[j])).append("\tQuantity: ")
+                            .append(quantity).append("\tTotal: ")
+                            .append(df2.format(itemPrices[j] * quantity)).append("\n");
+                }
+            }
+        }
+        invoice.append("\nTotal before tax: ").append(df2.format(totalBeforeTax)).append("\n");
+        invoice.append("Tax: ").append(df2.format(tax)).append("\n");
+        invoice.append("Shipping: ").append(df2.format(shipping)).append("\n");
+        invoice.append("Final Amount Due: ").append(df2.format(finalAmount)).append("\n");
+
+        JOptionPane.showMessageDialog(null, new JTextArea(invoice.toString()), "Invoice", JOptionPane.INFORMATION_MESSAGE);
+    }
+}
